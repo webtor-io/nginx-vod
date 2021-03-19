@@ -21,7 +21,6 @@ RUN ./configure --prefix=/usr/local/nginx \
 	--with-http_ssl_module \
 	--with-file-aio \
 	--with-threads \
-	--with-http_slice_module \
 	--with-cc-opt="-O3"
 RUN make
 RUN make install
