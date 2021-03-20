@@ -5,8 +5,8 @@ FROM base AS build
 RUN apk add --no-cache curl build-base openssl openssl-dev zlib-dev linux-headers pcre-dev
 RUN mkdir nginx nginx-vod-module nginx-secure-token-module
 
-ARG NGINX_VERSION=1.19.4
-ARG VOD_MODULE_VERSION=8d2af4a35969e6e499208678662f93b0097827d5
+ARG NGINX_VERSION=1.19.8
+ARG VOD_MODULE_VERSION=d883ee0631533553d69845fd22192a28af927d27
 ARG SECURE_TOKEN_MODULE_VERSION=95bdc0d1aca06ea7fe42555f71e65910bd74914d
 
 
