@@ -1,13 +1,13 @@
-FROM alpine:3.12.1 AS base
+FROM alpine:3.13.5 AS base
 
 FROM base AS build
 
 RUN apk add --no-cache curl build-base openssl openssl-dev zlib-dev linux-headers pcre-dev
 RUN mkdir nginx nginx-vod-module nginx-secure-token-module
 
-ARG NGINX_VERSION=1.19.8
-ARG VOD_MODULE_VERSION=d883ee0631533553d69845fd22192a28af927d27
-ARG SECURE_TOKEN_MODULE_VERSION=95bdc0d1aca06ea7fe42555f71e65910bd74914d
+ARG NGINX_VERSION=1.21.0
+ARG VOD_MODULE_VERSION=56a540792de4f758d98c94fffae9c56e98bdb714
+ARG SECURE_TOKEN_MODULE_VERSION=0cb224d951d0f8de30005b19c44736799fd6e602
 
 
 RUN curl -sL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz | tar -C /nginx --strip 1 -xz
