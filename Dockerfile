@@ -29,5 +29,12 @@ COPY ./conf/ /usr/local/nginx/conf/
 FROM base
 RUN apk add --no-cache ca-certificates openssl pcre zlib
 COPY --from=build /usr/local/nginx /usr/local/nginx
+# nginx is PID 1. SIGTERM, the default, is its fast shutdown: segments in
+# flight are cut. SIGQUIT closes the listener and lets them finish. Docker
+# and containerd send the image's STOPSIGNAL. worker_shutdown_timeout bounds
+# the wait; the deployment passes it with -g, next to its grace period, so
+# conf/nginx.conf must not set it (a duplicate fails the start).
+# tests/graceful_stop.sh checks both.
+STOPSIGNAL SIGQUIT
 ENTRYPOINT ["/usr/local/nginx/sbin/nginx"]
 CMD ["-g", "daemon off;"]
