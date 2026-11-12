@@ -9,11 +9,22 @@ ENV NGINX_VERSION=1.30.6 \
     VOD_MODULE_COMMIT_HASH=26f06877b0f2a2336e59cda93a3de18d7b23a3e2 \
     SECURE_TOKEN_MODULE_COMMIT_HASH=24f7b99d9b665e11c92e585d6645ed6f45f7d310
 
-RUN apk add --no-cache curl build-base openssl openssl-dev zlib-dev linux-headers pcre-dev && \
-    mkdir nginx nginx-vod-module nginx-secure-token-module && \
-    curl -sL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz | tar -C /nginx --strip 1 -xz && \
-    curl -sL https://github.com/kaltura/nginx-vod-module/archive/${VOD_MODULE_COMMIT_HASH}.tar.gz | tar -C /nginx-vod-module --strip 1 -xz && \
-    curl -sL https://github.com/kaltura/nginx-secure-token-module/archive/${SECURE_TOKEN_MODULE_COMMIT_HASH}.tar.gz | tar -C /nginx-secure-token-module --strip 1 -xz
+# kaltura/nginx-vod-module and kaltura/nginx-secure-token-module were removed
+# from GitHub around 2026-11-07 (the repositories answer 404). webtor-io keeps
+# unchanged mirrors. The modules are fetched by commit, so git checks what it
+# gets against the pinned hash whichever host serves it; curl -f makes a
+# failed download say so instead of feeding an error page to tar.
+ARG VOD_MODULE_REPO=https://github.com/webtor-io/nginx-vod-module.git
+ARG SECURE_TOKEN_MODULE_REPO=https://github.com/webtor-io/nginx-secure-token-module.git
+
+RUN apk add --no-cache curl git build-base openssl openssl-dev zlib-dev linux-headers pcre-dev && \
+    mkdir nginx && \
+    curl -fsSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz | tar -C /nginx --strip 1 -xz && \
+    for m in "/nginx-vod-module ${VOD_MODULE_REPO} ${VOD_MODULE_COMMIT_HASH}" \
+             "/nginx-secure-token-module ${SECURE_TOKEN_MODULE_REPO} ${SECURE_TOKEN_MODULE_COMMIT_HASH}"; do \
+        set -- $m && git init -q "$1" && git -C "$1" fetch -q --depth 1 "$2" "$3" && \
+        git -C "$1" checkout -q FETCH_HEAD && test "$(git -C "$1" rev-parse HEAD)" = "$3" || exit 1; \
+    done
 
 WORKDIR /nginx
 # -std=gnu17: gcc 15 defaults to C23, where nginx-vod-module's "void f()"
